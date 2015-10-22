@@ -32,7 +32,7 @@ class ProjectInformation:
 	NAME = 1
 	VERSION = 2
 	ARTIFACT_ID = 3
-
+    
 def getProjectInformation(information):
 	pom = ET.parse('pom.xml').getroot()
 	artifactId = pom.findall('maven:artifactId', namespaces)[0].text
@@ -69,35 +69,39 @@ def writeSonarConfig(pName, pVersion, aId):
 		file.write("#	Encoding Configuration of the source code (commented to use the system default encoding)\n")
 		file.write("#sonar.sourceEncoding=UTF-8\n")
 		file.write("#	Sonar Server Address (Commented to use the default localserver at port 9000)\n")
-		file.write("#sonar.host.url=" + sonarServerAddr + "\n")
+		file.write("sonar.host.url=" + sonarServerAddr + "\n")
 		file.close()
 		
 def launchRunner(pName):
 	print('[i] Launching Sonar Runner for Project: ' + pName)
 	runner = Popen("sonar-runner.bat", cwd=os.getcwd())
 	stdout, stderr = runner.communicate()
-		
-for name in os.listdir("."):
-	if(name not in dirsToAvoid and os.path.isdir(os.path.join(".", name))):
-		dirsToScan.append(name)
+	
+def main():
+    for name in os.listdir("."):
+            if(name not in dirsToAvoid and os.path.isdir(os.path.join(".", name))):
+                    dirsToScan.append(name)
 
-print("[i] Discovery of maven artifacts started...\n")
-		
-for path in dirsToScan:
-	os.chdir(path)
-	if(os.path.isfile("pom.xml")):
-		print "[i] --> maven artifact found at " + path
-		
-		projectName = getProjectInformation(ProjectInformation.NAME)
-		projectVersion = getProjectInformation(ProjectInformation.VERSION)
-		artifactId = getProjectInformation(ProjectInformation.ARTIFACT_ID)
-		
-		print "[i] Project Name.........: " + projectName
-		print "[i] Project Version......: " + projectVersion
-		print "[i] Artifact ID..........: " + artifactId
-		
-		writeSonarConfig(projectName, projectVersion, artifactId)
-		launchRunner(projectName)
-	else:
-		print "[e] not a valid maven artifact at: " + path
-	os.chdir(workingDir)
+    print("[i] Discovery of maven artifacts started...\n")
+
+    for path in dirsToScan:
+            os.chdir(path)
+            if(os.path.isfile("pom.xml")):
+                    print "[i] --> maven artifact found at " + path
+
+                    projectName = getProjectInformation(ProjectInformation.NAME)
+                    projectVersion = getProjectInformation(ProjectInformation.VERSION)
+                    artifactId = getProjectInformation(ProjectInformation.ARTIFACT_ID)
+
+                    print "[i] Project Name.........: " + projectName
+                    print "[i] Project Version......: " + projectVersion
+                    print "[i] Artifact ID..........: " + artifactId
+
+                    writeSonarConfig(projectName, projectVersion, artifactId)
+                    launchRunner(projectName)
+            else:
+                    print "[e] not a valid maven artifact at: " + path
+            os.chdir(workingDir)
+
+# Entry Point
+if(__name__ == "__main__"): main()
